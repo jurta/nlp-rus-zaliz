@@ -1,4 +1,6 @@
-## [Цель проекта]{#goal}
+# Построение полных парадигм слов русского языка на базе грамматического словаря
+
+## Цель проекта
 
 Целью проекта является построение полных парадигм слов русского
 языка, данных в словарной части книги *"Зализняк А. А. Грамматический
@@ -6,7 +8,7 @@
 1987."*, в соответствии с правилами словоизменения, описанными в части
 *"Грамматические сведения"* того же словаря.
 
-## [Исходные данные]{#source}
+## Исходные данные
 
 Исходный материал для программы взят с
 [сайта С. А. Старостина](https://starling.rinet.ru/).
@@ -19,18 +21,18 @@
 А. А. Зализняка.  Но так как данные в текстовом формате содержат меньше
 ошибок, то они и используются в данном проекте.
 
-## [Исправление ошибок в исходных текстах словаря]{#typos}
+## Исправление ошибок в исходных текстах словаря
 
 Исходные тексты содержат следующие типы ошибок:
 
 * опечатки в бумажной версии словаря (печатном издании);
 * опечатки в электронной версии словаря;
 
-## [Преобразование fuzzy исходных данных в набор атрибутов]{#convert}
+## Преобразование fuzzy исходных данных в набор атрибутов
 
 convert zaliz database files from original fuzzy format to more parsable.
 
-### [Условные знаки]{#attributes}
+### Условные знаки
 
 [c0019.gif](http://zaliznyak-dict.narod.ru/c0019.gif)
 [c0020.gif](http://zaliznyak-dict.narod.ru/c0020.gif)
@@ -109,13 +111,13 @@ convert zaliz database files from original fuzzy format to more parsable.
 </tr><tr>
 <td>подтип склонения или спряжения, отличающийся от основного типа чередованием беглой гласной с нулем</td>
 
-<td>надстрочная звёздочка (\*) при цифре</td>
-<td>звёздочка (\*) при цифре</td>
+<td>надстрочная звёздочка (*) при цифре</td>
+<td>звёздочка (*) при цифре</td>
 <td>ч</td>
 </tr><tr>
 <td>подтип склонения или спряжения, отличающийся от основного типа определенными чередованиями</td>
 <td>надстрочный кружочек (о) при цифре</td>
-<td>две звёздочки (\*\*) при цифре</td>
+<td>две звёздочки (**) при цифре</td>
 <td>ч2</td>
 </tr><tr>
 <td>указание, позволяющее правильно образовать основу настоящего времени глаголов</td>
@@ -256,7 +258,7 @@ convert zaliz database files from original fuzzy format to more parsable.
 <!-- <td></td> -->
 </tr></table>
 
-### [Список свойств и значений]{#keys}
+### Список свойств и значений
 
 <table class="list" cellpadding="1" cellspacing="1"><tr>
 <th>Поле</th>
@@ -489,7 +491,7 @@ convert zaliz database files from original fuzzy format to more parsable.
 <td>число от 1 до 3</td>
 </tr></table>
 
-### [Коды склонений/спряжений]{#inflections}
+### Коды склонений/спряжений
 
 <table class="list" cellpadding="1" cellspacing="1"><tr>
 <th>Часть речи</th>
@@ -621,7 +623,7 @@ convert zaliz database files from original fuzzy format to more parsable.
 <td>В деепричастии и причастии после минуса все формы прилагателного</td>
 </tr></table>
 
-### [Коды в таблице стандартных окончаний]{#inflections}
+### Коды в таблице стандартных окончаний
 
 <table class="list" cellpadding="1" cellspacing="1"><tr>
 <th>1-й символ</th>
@@ -654,7 +656,7 @@ convert zaliz database files from original fuzzy format to more parsable.
 у - ударное</td>
 </tr></table>
 
-### [Поля хеша полной информации]{#inflections}
+### Поля хеша полной информации
 
 <table class="list" cellpadding="1" cellspacing="1"><tr>
 <th>Имя</th>
@@ -671,7 +673,7 @@ convert zaliz database files from original fuzzy format to more parsable.
 <td>ударения дополнительные</td>
 </tr></table>
 
-## [Построение полных парадигм]{#paradigms}
+## Построение полных парадигм
 
 Реализация правил словоизменения русского языка, описанных в книге:
 [Образы страниц "Грамматические сведения" словаря А. А. Зализняка (стр.
@@ -681,7 +683,7 @@ convert zaliz database files from original fuzzy format to more parsable.
 
 *RU::Morfo::Zaliz::Inflect* - Russian inflection from dictionary of A.A.Zaliznyak
 
-## [Результаты (статистика)]{#results}
+## Результаты (статистика)
 
 Из 96000 лемм получено 5300000 уникальных словоформ.
 
@@ -698,7 +700,7 @@ convert zaliz database files from original fuzzy format to more parsable.
 
 <!-- <a href="zaliz.ru.html">полной документации</a> -->
 
-## [Формат файлов с полными парадигмами]{#fileparadigms}
+## Формат файлов с полными парадигмами
 
 zaliz2.adb - все слова и ссылки на парадигмы
 
@@ -741,7 +743,7 @@ zaliz2.acc - файл ударений парадигм
 3. Места ударения в каждой парадигме, разделенные точкой с запятой
    (по 6 падежей для ед.ч. и мн.ч.)
 
-## [Скачать]{#download}
+## Скачать
 
 Файл результата
 
@@ -761,15 +763,15 @@ zaliz2.acc - файл ударений парадигм
 
 Исходный код программы
 
-[Lingua-RU-Zaliz-Inflect.pm](https://github.com/jurta/nlp-rus-zaliz/blob/master/perl/Lingua/RU/Zaliz/Lingua-RU-Zaliz-Inflect.pm)
-[Lingua-RU-Accent.pm](https://github.com/jurta/nlp-rus-zaliz/blob/master/perl/Lingua/RU/Lingua-RU-Accent.pm)
-[adb2suf.pl](https://github.com/jurta/nlp-rus-zaliz/blob/master/perl/adb2suf.pl)
-[ADB\_File.pm](https://github.com/jurta/nlp-rus-zaliz/blob/master/perl/ADB_File.pm)
+[Lingua-RU-Zaliz-Inflect.pm](https://github.com/jurta/nlp-rus-zaliz/blob/master/perl/Lingua/RU/Zaliz/Lingua-RU-Zaliz-Inflect.pm)  
+[Lingua-RU-Accent.pm](https://github.com/jurta/nlp-rus-zaliz/blob/master/perl/Lingua/RU/Lingua-RU-Accent.pm)  
+[adb2suf.pl](https://github.com/jurta/nlp-rus-zaliz/blob/master/perl/adb2suf.pl)  
+[ADB\_File.pm](https://github.com/jurta/nlp-rus-zaliz/blob/master/perl/ADB_File.pm)  
 [txt2adb.pl](https://github.com/jurta/nlp-rus-zaliz/blob/master/perl/txt2adb.pl)
 
 Файл результатов
 
-[zaliz.full.all_1](https://github.com/jurta/nlp-rus-zaliz/blob/master/perl/zaliz.full.all_1)
+[zaliz.full.all_1](https://github.com/jurta/nlp-rus-zaliz/blob/master/perl/zaliz.full.all_1)  
 [zaliz.full.all_2](https://github.com/jurta/nlp-rus-zaliz/blob/master/perl/zaliz.full.all_2)
 
 Инструкции по установке и использованию программы находятся в файле README.md
