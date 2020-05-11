@@ -1,0 +1,30 @@
+allaffixes on
+
+wordchars [\xc0-\xdf] [\xe0-\xff]
+
+suffixes
+
+flag *\323:
+    .		>	re
+
+flag *\061:
+    .		>	re
+
+flag *\315:
+    .		>	re
+
+flag *\064:
+    .		>	re
+
+flag *\071:
+    .		>	re
+
+flag *\062:
+    .		>	re
+
+flag *\060:
+    .		>	re
+
+flag *\065:
+    .		>	re
+

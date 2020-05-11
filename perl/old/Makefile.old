@@ -1,0 +1,121 @@
+
+	@echo "Options:"
+	@echo "    all - all next targets"
+	@echo "    rdict - create reverse dictionary"
+
+	if test -s $(DICT_TXT); then mv $(DICT_TXT) $(DICT_TXT)~; fi
+	if test -s $(DICT_ADB); then mv $(DICT_ADB) $(DICT_ADB)~; fi
+	if test -s $(DICT_ADB).err; then mv $(DICT_ADB).err $(DICT_ADB).err~; fi
+
+# OLD:
+
+# my $koi = (ÁÂ×ÇÄÅ£ÖÚÉÊËÌÍÎÏÐÒÓÔÕÆÈÃÞÛÝßÙØÜÀÑáâ÷çäå³öúéêëìíîïðòóôõæèãþûýÿùøüàñ);
+# my $iso = (ÐÑÒÓÔÕñÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîï°±²³´µ¡¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏ);
+
+# OK:
+# my $CP866 = '€‚ƒ„…ð†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ ¡¢£¤¥ñ¦§¨©ª«¬­®¯àáâãäåæçèéêëìíîï'
+# my $KOI8R = 'áâ÷çäå³öúéêëìíîïðòóôõæèãþûýÿùøüàñÁÂ×ÇÄÅ£ÖÚÉÊËÌÍÎÏÐÒÓÔÕÆÈÃÞÛÝßÙØÜÀÑ'
+# # next created from prev by: "perl -nle 'print sort split //'"
+# my $SORT8 = '£³ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ'
+
+# CP866 = '€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ'
+# KOI8R = 'áâ÷çäåöúéêëìíîïðòóôõæèãþûýÿùøüàñÁÂ×ÇÄÅÖÚÉÊËÌÍÎÏÐˆ‰Š‹ŒŽ‘’“”•–—˜™šœžŸ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·ÒÓÔÕÆÈÃÞÛÝßÙØÜÀÑ‚„‡†€…ƒ›¸¹º»¼½¾¿'
+# # next created from prev by: "perl -nle 'print sort split //'"
+# SORT8 = '€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ'
+# CP866 = ' ¡¢£¤¥ñ¦§¨©ª«¬­®¯àáâãäåæçèéêëìíîï€‚ƒ„…ð†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ'
+# KOI8R = 'ÁÂ×ÇÄÅ£ÖÚÉÊËÌÍÎÏÐÒÓÔÕÆÈÃÞÛÝßÙØÜÀÑáâ÷çäå³öúéêëìíîïðòóôõæèãþûýÿùøüàñ'
+# 	| tr ˆŠ‘–šœž¢ áå³éïõùüàñ \
+# 	| tr °²µ·¹¾ÂÄÆÊ±´¸½ÿ €…ðˆŽ“›žŸ€…ˆŽ¿ \
+
+# OK:
+# 	perl -nle 'chop;s/\004.*$$//;s/^\*//;s/\s+$$//;next if/^$$/;print if !$$seen{$$_}++' $^ \
+# 	| tr °²µ·¹¾ÂÄÆÊ±´¸½Ëÿ €…ðˆŽ“›žŸ€…ˆŽŸ¿ \
+# 	| tr $(CP866) $(KOI8R) \
+
+# the same but with sorting (not need anymore)
+# 	if test -s $(DICT_O); then cp $(DICT_O) $(DICT_O)~; fi
+# 	perl -nle 'chop;s/\004.*$$//;next if/^\s*$$/;s/^\*//;s/\s*$$//;print' $^ \
+# 	| tr °²µ·¹¾ÂÄÆÊ±´¸½Ëÿ €…ðˆŽ“›žŸ€…ˆŽŸ¿ \
+# 	| tr $(CP866) $(SORT8) \
+# 	| sort -u \
+# 	| tr $(SORT8) $(KOI8R) \
+# 	> $(DICT_O)
+
+#	gzip -c < zexcept.subpatch > zexcept.subpatch.gz
+# 	perl txt2adb.pl $(DICT_S) 2> $(DICT_ADB).err \
+# 	| tr $(KOI8R) $(SORT8) \
+# 	| LANG=ru_RU.KOI8-R sort -u \
+# 	| tr $(SORT8) $(KOI8R) \
+# 	> $(DICT_ADB)
+
+# 	@echo "    patch - from manually corrected dictionary"
+# 	@echo "    prolog - convert dict to Prolog database"
+# 	@echo "    tab - convert dict to koi8"
+# 	@echo "    full - convert dict to full list"
+
+# original dictionary sorted and converted
+# z.orig is NOT needed -> pipes are joined to z.txt
+# DICT_O  = $(DICT).orig.txt
+
+# tabular format
+# DICT_T  = $(DICT).tab
+# Prolog format
+# DICT_PL = $(DICT).pl
+# extended format
+# DICT_FULL = $(DICT).full
+
+# patch file for manual corrections (now many subpatches are used instead)
+# DICT_P  = $(DICT).patch
+# gzipped patch file (now many subpatches are used instead)
+# DICT_PZ = $(DICT_P).gz
+
+# $(DICT_S): $(DICT_O)
+# 	if test -s $(DICT_O); then mv $(DICT_O) $(DICT_O)~; fi
+# 	if test -s $(DICT_S); then mv $(DICT_S) $(DICT_S)~; fi
+# 	cat $(DICT_O) \
+# 	| perl subpatch.pl $(DICT_P_3) \
+# 	| perl subpatch.pl $(DICT_P_4) > $(DICT_S)
+# # 	if test -s $(DICT_O); then cp $(DICT_O) $(DICT_S); fi
+# # 	gzip -cd < $(DICT_PZ) | patch $(DICT_S) -
+
+# patch: create-patch
+# create-patch: $(DICT_PZ)
+# $(DICT_PZ): $(DICT_O) $(DICT_S)
+# 	diff -u $(DICT_O) $(DICT_S) | gzip -c > $(DICT_PZ)
+
+## Make tabular file from source (frozen, i.e. not used now)
+# tab: convert-to-tab
+# convert-to-tab: $(DICT_T)
+# $(DICT_T): $(DICT_S) z2tab.pl
+# 	if test -s $(DICT_T); then mv $(DICT_T) $(DICT_T)~; fi
+# 	if test -s $(DICT_T).err; then mv $(DICT_T).err $(DICT_T).err~; fi
+# 	perl z2tab.pl $(DICT_S) > $(DICT_T) 2> $(DICT_T).err
+
+## Extend tabular file (NOT USED: now replaced by target "adb")
+# full: convert-tab-to-full
+# convert-tab-to-full: $(DICT_FULL)
+# $(DICT_FULL): $(DICT_T) tab2full.pl
+# 	if test -s $(DICT_FULL); then mv $(DICT_FULL) $(DICT_FULL)~; fi
+# 	if test -s $(DICT_FULL).err; then mv $(DICT_FULL).err $(DICT_FULL).err~; fi
+# 	perl tab2full.pl $(DICT_T) > $(DICT_FULL) 2> $(DICT_FULL).err
+
+## Make Prolog file from tabular file (frozen, i.e. not used now)
+# prolog: convert-tab-to-prolog
+# convert-tab-to-prolog: $(DICT_PL)
+# $(DICT_PL): $(DICT_T) tab2pl.pl
+# 	if test -s $(DICT_PL); then mv $(DICT_PL) $(DICT_PL)~; fi
+# 	if test -s $(DICT_PL).err; then mv $(DICT_PL).err $(DICT_PL).err~; fi
+# 	perl tab2pl.pl $(DICT_T) > $(DICT_PL) 2> $(DICT_PL).err
+
+#	cut -f 1 < $(DICT_ADB) | cut -c 3- | LANG=ru_RU.KOI8-R sort -u > $(DICT_LST)
+#	cut -d " " -f 1 < $(DICT_TXT) | uniq > $(DICT_LST)
+#	perl -lne 'print $1 if/^w:([^\t]+)/' $(DICT_ADB) | uniq > $(DICT_LST)
+
+REVDIC_PL = '($$a,$$b)=split(/ /,$$_,2);$$_=reverse($$a)." $$b"'
+rev: $(DICT_REV)
+$(DICT_REV): $(DICT_TXT)
+	perl -ple $(REVDIC_PL) $(DICT_TXT) \
+	| LANG=ru_RU.KOI8-R sort -t " " -k 1,1 \
+	| perl -ple $(REVDIC_PL) \
+	> $(DICT_REV)
+# perl -ple '($a,$b)=split(/ /,$_,2);$_=reverse($a)." $b"' zaliz.txt | LANG=ru_RU.KOI8-R sort -t " " -k 1,1 | perl -ple '($a,$b)=split(/ /,$_,2);$_=reverse($a)." $b"' > zaliz.rev

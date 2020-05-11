@@ -1,0 +1,420 @@
+head	1.3;
+access;
+symbols;
+locks
+	juri:1.3; strict;
+comment	@# @;
+
+
+1.3
+date	2001.02.25.19.39.39;	author juri;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2001.02.25.15.38.24;	author juri;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2001.02.25.00.11.28;	author juri;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.3
+log
+@Added suffix indexes generation
+@
+text
+@#!/usr/bin/perl -w
+# -*- mode: Perl; coding: cyrillic-koi8; -*-
+# $Id: suf2tabh.pl,v 1.2 2001/02/25 15:38:24 juri Exp juri $
+# Copyright (c) 2000  Juri Linkov <juri@@eta.org>
+# This file is distributed under the terms of the GNU GPL.
+
+# suf2tab.pl -- generate tables for parsing suffix trees and building paradigms
+# usage: perl suf2tabh.pl rus.suf > librustab.h
+# usage: perl suf2tabh.pl -db2 rus.suf
+
+use strict;
+use vars qw($t %srt $isrt $ists @@sts @@psts $ipsts
+            %sufst %sufsts %stsuf %sufpr @@prs @@pprs $ipprs
+            %suf %sufs $isuf $isufs @@psufs @@ppsufs $ippsufs $maxpn);
+
+# $t - suffix tree
+# %srt - keeps order of suffix tree nodes by their frequency
+# $isrt - counter for %srt
+# @@sts - states
+# $ists - counter of states
+# @@psts - pointers to states
+# $ipsts - counter of pointers to states
+# @@prs - paradigms
+# @@pprs - pointers to paradigms
+# $ipprs - counter of pointers to paradigms
+# %sufst - mapping suffix to state
+# %stsuf - mapping state to suffix (reverse of sufst)
+# %sufsts - mapping suffix to state transitions (pairs of input char and next state)
+# %sufpr - mapping suffix to paradigm
+# %suf - mapping suffix to suffix number
+# $isuf - counter of suffixes
+# %sufs - mapping paradigm number to suffix numbers
+# @@psufs - pointers to suffixes
+# @@ppsufs - pointers to pointers to suffixes
+# $ippsufs - counter of pointers to pointers to suffixes
+
+my ($isrt, $ists, $ipsts, $ipprs, $ippsufs, $maxpn) = (0, 1, 0, 0, 0, 0);
+push @@psts, 0, ($ipsts += 1);
+push @@sts, 0;
+push @@pprs, 0, ($ipprs += 1);
+push @@prs, 0;
+push @@ppsufs, 0, ($ippsufs += 1);
+push @@psufs, 0;
+
+# 1. create suffix tree from suffix table for wordform analysis
+# 2. build suffix index for wordform generation
+while (<>) {
+  chomp;
+  my ($n, $c, $p) = split /\t/;
+  my ($j) = (0);
+  my ($ipsufs) = (0);
+  $maxpn = $n if ($n > $maxpn);
+  $sufs{$n} = [map {
+    $j++;
+    if (!defined $suf{$_}) { $suf{$_} = (++$isuf) }
+    my $s = $_ ne "-" ? $suf{$_} : 0;
+#      print "suf>$_:$s\n";
+    map {
+      s/[\(\[*?&].*$//;
+      if (!/[\-\#]$/) {
+        $_ = reverse;
+        push @@{$sufpr{$_}}, [$n, $j];
+        $_ .= "\$";
+        my $s = "";
+        map {
+          $s .= $_;
+          if (!defined $srt{"$s\$"}) { $srt{"$s\$"} = (++$isrt) }
+          if (!defined $srt{$s}) { $srt{$s} = (++$isrt) }
+        } (split//);
+        s/(.)/->{'$1'}/g;
+        eval "\$t$_=3";
+        ""
+      }
+    } ($_ ? split(/,/,$_,-1) : ($_));
+    $s
+  } (split(/;/,$p,-1))];
+#    print "sufs>$n:",@@{$sufs{$n}},"\n";
+}
+
+# 3. build state transition table from suffix tree
+sub walk_suf_tree {
+  my ($t, $p) = @@_;
+  my (@@sortedkeys) = (sort { $srt{"$p$a"} <=> $srt{"$p$b"} } (keys %$t));
+  my $first;
+  if (!defined $sufst{$p}) { $sufst{$p} = ($ists++) }
+  foreach my $key (@@sortedkeys) {
+    if ($key ne "\$") {
+      if (!defined $sufst{"$p$key"}) { $sufst{"$p$key"} = ($ists++) }
+      push @@{$sufsts{$p}}, ord($key), $sufst{"$p$key"};
+    }
+  }
+  foreach my $key (@@sortedkeys) {
+    walk_suf_tree($t->{$key},"$p$key") if ($key ne "\$");
+  }
+}
+
+walk_suf_tree($t,"");
+
+%stsuf = reverse %sufst;
+
+# 4. build result tables
+foreach (1..$ists-1) {
+  my $s = $stsuf{$_};
+  # print "$_:$s:", join(",",map { "$_->[0]:$_->[1]" }@@{$sufpr{$s}}), "/", join(";",defined @@{$sufsts{$s}}?@@{$sufsts{$s}}:"-"), "\n";
+  if (defined $sufsts{$s} && @@{$sufsts{$s}}) {
+    push @@sts, @@{$sufsts{$s}};
+    push @@psts, ($ipsts += (@@{$sufsts{$s}}));
+  } else {
+    push @@sts, 0;
+    push @@psts, ($ipsts += 1);
+  }
+  if (defined $sufpr{$s} && @@{$sufpr{$s}}) {
+    foreach (@@{$sufpr{$s}}) { push @@prs, $_->[0], $_->[1] }
+    push @@pprs, ($ipprs += (@@{$sufpr{$s}} * 2));
+  } else {
+    push @@prs, 0;
+    push @@pprs, ($ipprs += 1);
+  }
+}
+
+foreach (1..$maxpn) {
+  if (defined $sufs{$_}) {
+    push @@psufs, @@{$sufs{$_}};
+    push @@ppsufs, ($ippsufs += (@@{$sufs{$_}}));
+  } else {
+    push @@psufs, 0;
+    push @@ppsufs, ($ippsufs += 1);
+  }
+}
+
+push @@sts, 0;                   # TODO: test on boundary values
+push @@prs, 0;                   # TODO: test on boundary values
+
+# 5. output results
+sub print_c_tables {
+  print "static const uint16_t psts[] = {", sprintf("%6d,", shift(@@psts)),"\n";
+  while (@@psts) {
+    my @@psts10 = splice(@@psts,0,10);
+    print join(",", map { sprintf("%6d", $_) } @@psts10), (@@psts?",":""), "\n";
+  }
+  print "};\n\n";
+
+  print "static const int16_t sts[] = {", sprintf("%6d,", shift(@@sts)),"\n";
+  while (@@sts) {
+    my @@sts10 = splice(@@sts,0,10);
+    print join(",", map { sprintf("%6d", $_) } @@sts10), (@@sts?",":""), "\n";
+  }
+  print "};\n\n";
+
+  print "static const int32_t pprs[] = {", sprintf("%6d,", shift(@@pprs)),"\n";
+  while (@@pprs) {
+    my @@pprs10 = splice(@@pprs,0,10);
+    print join(",", map { sprintf("%6d", $_) } @@pprs10), (@@pprs?",":""), "\n";
+  }
+  print "};\n\n";
+
+  print "static const int16_t prs[] = {", sprintf("%6d,", shift(@@prs)),"\n";
+  while (@@prs) {
+    my @@prs10 = splice(@@prs,0,10);
+    print join(",", map { sprintf("%6d", $_) } @@prs10), (@@prs?",":""), "\n";
+  }
+  print "};\n\n";
+
+  print "static const int32_t ppsufs[] = {", sprintf("%6d,", shift(@@ppsufs)),"\n";
+  while (@@ppsufs) {
+    my @@ppsufs10 = splice(@@ppsufs,0,10);
+    print join(",", map { sprintf("%6d", $_) } @@ppsufs10), (@@ppsufs?",":""), "\n";
+  }
+  print "};\n\n";
+
+  print "static const int16_t psufs[] = {", sprintf("%6d,", shift(@@psufs)),"\n";
+  while (@@psufs) {
+    my @@psufs10 = splice(@@psufs,0,10);
+    print join(",", map { sprintf("%6d", $_) } @@psufs10), (@@psufs?",":""), "\n";
+  }
+  print "};\n\n";
+
+  print "static char *sufs[] = {\n  \"-\",\n";
+  my %sufr = reverse %suf;
+  foreach (1..$isuf) {
+    print "  \"", $sufr{$_}, "\",\n";
+  }
+  print "  \"\"\n};\n\n";
+}
+
+print_c_tables();
+
+print <<HERE;
+static const int16_t rsuffixpp[] = {
+  0, 5, 9
+};
+
+static const int16_t rsuffixp[] = {
+  4, 5, 123, 127, 128, /* 127 ({{5, 0}, {6, 0}})? */
+  7, 8, 134, 4, /* 12 */
+  9, 6, 123, 127, 128 /* 127 */
+};
+
+static char *rsuffix[] = {
+  "а", "о", "ов", "гаться", "гаюсь*,жусь*"
+};
+HERE
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@
+
+
+1.2
+log
+@Implemented state and paradigm tables generation
+@
+text
+@d3 1
+a3 1
+# $Id: suf2tabh.pl,v 1.1 2001/02/25 00:11:28 juri Exp juri $
+d12 3
+a14 1
+use vars qw($t %srt $isrt $ists @@sts @@psts $ipsts %sufst %sufsts %stsuf %sufpr @@prs @@pprs $ipprs);
+d30 6
+d37 1
+a37 1
+my ($isrt, $ists, $ipsts, $ipprs) = (0, 1, 0, 0);
+d42 2
+d45 2
+a46 1
+# create suffix tree from suffix table
+d51 3
+a53 1
+  map {
+d55 3
+a68 1
+          # printf "%05d", $srt{$s};
+a72 1
+        # s/\$$//; print "$_\n";
+d75 3
+a77 1
+  } (split(/;/,$p,-1));
+d80 1
+a80 5
+foreach my $key (keys %sufpr) {
+#    print "$key: ", join(",",map { "$_->[0]:$_->[1]" }@@{$sufpr{$key}}), "\n";
+}
+
+# build state transition tables
+a83 1
+  # return unless ref($t) eq 'HASH';
+a85 2
+#    print ">$p\[$sufst{$p}\]:", join(",",map { "$_->[0]:$_->[1]" }@@{$sufpr{$p}}), "\n";
+  # print $p, ":";
+d87 1
+a87 6
+    if ($key eq "\$") {
+      # print "$p\n" ;
+    } else {
+      # if (defined $first) { print "|" } else { $first = 1 }
+      # print "'$key'", !((defined $t->{"$key"}->{"\$"}) && (keys(%{$t->{"$key"}})==1)) ? "$p$key" : "", " {i=", $ists++, "} ";
+      # print ord($key), ", ", $ists++, ",\n";
+a91 1
+  # print ";\n";
+d93 1
+a93 4
+    if ($key ne "\$" # and !((defined $t->{"$key"}->{"\$"}) && (keys(%{$t->{"$key"}})==1))
+        ) {
+      walk_suf_tree($t->{$key},"$p$key");
+    }
+a98 3
+#  use Data::Dumper;;
+#  print Dumper(@@{$sufsts{'а'}});
+
+d101 1
+a101 1
+# build result tables
+d103 5
+a107 7
+  my $suf = $stsuf{$_};
+#    print "$_:$suf:", join(",",map { "$_->[0]:$_->[1]" }@@{$sufpr{$suf}}), "/",
+#    join(";",defined @@{$sufsts{$suf}}?@@{$sufsts{$suf}}:"-"), "\n";
+
+  if (defined $sufsts{$suf} && @@{$sufsts{$suf}}) {
+    push @@psts, ($ipsts += (@@{$sufsts{$suf}} * 1));
+    push @@sts, @@{$sufsts{$suf}};
+d109 1
+a110 1
+    push @@sts, 0;
+d112 8
+d121 4
+a124 3
+  if (defined $sufpr{$suf} && @@{$sufpr{$suf}}) {
+    push @@pprs, ($ipprs += (@@{$sufpr{$suf}} * 2));
+    foreach (@@{$sufpr{$suf}}) { push @@prs, $_->[0], $_->[1] }
+d126 2
+a127 2
+    push @@pprs, ($ipprs += 1);
+    push @@prs, 0;
+d131 2
+a132 2
+push @@sts, 0;                   # ???
+push @@prs, 0;                   # ???
+d134 36
+a169 6
+print "static const uint16_t psts[] = {", sprintf("%6d,", shift(@@psts)),"\n";
+while (@@psts) {
+  my @@psts10 = splice(@@psts,0,10);
+  print join(",", map { sprintf("%6d", $_) } @@psts10), (@@psts?",":""), "\n";
+}
+print "};\n\n";
+d171 6
+a176 6
+print "static const int16_t sts[] = {", sprintf("%6d,", shift(@@sts)),"\n";
+while (@@sts) {
+  my @@sts10 = splice(@@sts,0,10);
+  print join(",", map { sprintf("%6d", $_) } @@sts10), (@@sts?",":""), "\n";
+}
+print "};\n\n";
+d178 6
+a183 4
+print "static const int32_t pprs[] = {", sprintf("%6d,", shift(@@pprs)),"\n";
+while (@@pprs) {
+  my @@pprs10 = splice(@@pprs,0,10);
+  print join(",", map { sprintf("%6d", $_) } @@pprs10), (@@pprs?",":""), "\n";
+a184 1
+print "};\n\n";
+d186 1
+a186 6
+print "static const int16_t prs[] = {", sprintf("%6d,", shift(@@prs)),"\n";
+while (@@prs) {
+  my @@prs10 = splice(@@prs,0,10);
+  print join(",", map { sprintf("%6d", $_) } @@prs10), (@@prs?",":""), "\n";
+}
+print "};\n\n";
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d3 1
+a3 1
+# $Id$
+d7 1
+a7 1
+# suf2tabh.pl -- generates data tables for states, paradigms and suffixes
+a20 4
+# %sufst - mapping suffix-state
+# %sufsts - mapping suffix-state_transitions (pairs char-state)
+# %stsuf - mapping state-suffix
+# %sufpr - mapping suffix-paradigm
+d22 6
+d35 1
+d130 1
+a130 1
+print "static const uint16_t rstatep[] = {", sprintf("%6d,", shift(@@psts)),"\n";
+d137 1
+a137 1
+print "static const int16_t rstate[] = {", sprintf("%6d,", shift(@@sts)),"\n";
+d144 1
+a144 1
+print "static const int32_t rparadp[] = {", sprintf("%6d,", shift(@@pprs)),"\n";
+d151 1
+a151 1
+print "static const int16_t rparad[] = {", sprintf("%6d,", shift(@@prs)),"\n";
+@

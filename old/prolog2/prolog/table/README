@@ -1,0 +1,2 @@
+perl -e 'for('aaaa'..'zzzz'){print "$_\n"}' > table
+head -100000 table3 | perl -ne 'chomp;print"$_\t$_\n"' > table

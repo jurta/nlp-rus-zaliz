@@ -1,0 +1,35 @@
+
+* makeruss
+
+buildhash zaliz.sml zaliz.aff zaliz.hash
+cp zaliz.aff zaliz.hash /usr/lib/ispell
+
+* revdic
+
+gawk -- '{print $0,$1}' ~/doc/lang/rus/zaliz/zaliz/zaliz | decoder -c=ka | rev | sort -k 1 | cut -d " " -f 2- | rev | decoder -c=ak | less
+cut -d " " -f 1 ~/doc/lang/rus/zaliz/zaliz/zaliz | decoder -c=ka | rev | sort | rev | decoder -c=ak | less
+cut -d " " -f 1 ~/doc/lang/rus/zaliz/zaliz/zaliz | rev | sort -u | rev | diff - ~/usr/lang/rus/zaliz/zalizrev | less
+
+time((tell('zalizrev'),prrevdic;told)).
+
+* stat
+
+** all types
+cut -d ' ' -f 4 zaliz | gawk -- "{gsub(/[,*?\!~]/,\"\");print}" | sort | uniq -c | sort -n | less
+
+** how many multi-words
+cut -d ' ' -f 1 zaliz | sort | uniq -d | wc
+
+** sort by type
+sort -k 3 zaliz | less
+
+* Example of zaliz.sml:
+
+аба/C
+абажур/A
+абажурный/P
+
+* Example of complexity:
+
+посол 4 м 1а (_засол_)
+посол 4 мо 1*в (_дипломатический представитель_)

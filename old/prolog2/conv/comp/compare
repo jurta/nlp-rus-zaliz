@@ -1,0 +1,7 @@
+cat /home/juri/cd4/doc/lang/rus/new/zaliz/ZALIZNIA.LST \
+| decoder -c="ak" \
+| perl ../tab2str.pl \
+| perl -F/\\t/ -alne 'if($F[3] =~ /[a-z]/) { print "$F[1] $F[2] \004$F[3]";}else{ print "$F[1] $F[2] "}' \
+> zaliz1
+perl -p ../acc.pl /home/juri/cd4/doc/lang/rus/new/starling/z > zaliz2
+diff -w zaliz1 zaliz2 > zdiff

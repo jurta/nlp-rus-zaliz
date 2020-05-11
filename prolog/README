@@ -1,0 +1,33 @@
+* parameters
+** language: Russian, English, etc
+** database name: zaliz, etc
+** database interface: Prolog, table.pl, gdbm
+** strings internal representation: list of ASCII values, strings
+
+* result post-processing
+
+** statistics
+tr [\ ] [\\n] <wout | sortkoi8 | uniq >wout2
+tr [\ ] [\\n] <wout | sortkoi8 | uniq -c | sort -nr >wout2
+
+** split multi-column output to 1 column
+perl -ne 'print join "\n", split; print "\n"'
+
+** хумор
+чужая 4 жо п 4в
+
+* agama decode:
+еДГУФКАЕУУхЕ БГФЯх
+wi(W1,_,_,_), name(W1,[E,D,G,U,F,K,A,E,U,U,_,_]), wi(W2,_,_,_), name(W2,[B,G,F,Q,X]), write([W1,W2]), nl, fail.
+[единственный, число]
+agama/delat.html:  tr [еДГУФКАЕУУхЕБГФЯхИйЧТОЭслЬШМн] [Единственноечислопраягшмфыщжц]
+agama/sdelat.html: tr [еДпЦМЯЮЕЦЦгЕАпМФгжУсЭВлЬИъЗЩх] [Единственноечисломжфыаящгрпшц]
+
+1 лицо единственное число - делал     должно быть: м.р.
+2 лицо единственное число - делала    должно быть: ж.р.
+3 лицо единственное число - делало    должно быть: с.р.
+
+личные формы глагола настоящего времени: сделаю
+должно быть: будущего времени
+
+Сравнитльная степень

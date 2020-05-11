@@ -1,0 +1,31 @@
+#! @PERL@ -w
+# -*- perl -*-
+# @configure_input@
+
+;;; internal.el --- support for PC internal terminal -*- coding: raw-text; -*-
+;;; cl.el --- Common Lisp extensions for Emacs -*-byte-compile-dynamic: t;-*-
+;;; romanian.el --- Support for Romanian -*- coding: iso-latin-2; -*-
+#!/usr/bin/perl --	 # -*-Perl-*-
+#!/usr/bin/perl -P-	 # -*-Perl-*-
+# Functions that handle calling dialog(1) -*-perl-*-
+# -*- perl -*-
+
+    #!/bin/sh -- # -*- perl -*- -p
+    eval 'exec /usr/bin/perl $0 -S ${1+"$@"}'
+        if $running_under_some_shell;
+
+# -*-perl-*-
+
+;;; -*- Mode: Lisp; Syntax: Common-Lisp; -*-
+;;; Code from Paradigms of Artificial Intelligence Programming
+
+# $Id: DebianTest.pm,v 1.2 1998/09/16 23:53:40 phil Exp $
+# Copyright (c) 1998  XY <@>
+# This file is distributed under the terms of the GPL.
+
+1;
+########################################################################
+# Local Variables:
+# mode: perl
+# End:
+########################################################################

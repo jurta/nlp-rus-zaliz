@@ -1,0 +1,64 @@
+
+OK:
+rename Perl packages:
+Zaliz -> Lingua::RU::???(Morfo?,Morpho?)::Zaliz
+Orpho -> Lingua::RU::???::Orpho(Orfo?)
+Zaliz::Inflect.pm -> Lingua::RU::Morfo::Zaliz::Inflect.pm
+Orpho::Accent.pm -> Lingua::RU::Orpho::Accent.pm
+but better is:
+Zaliz::Inflect.pm -> Lingua::RU::Zaliz::Inflect.pm
+Orpho::Accent.pm -> Lingua::RU::Accent.pm
+
+# a - Õ
+# exc - ÉÓËÌ
+# n - ÆÎ
+# p - ÆÐ
+# s - Ô
+# s2 - Ô2
+# v - ×ÁÒ
+# w - Ó
+# z - ÆÚ
+# ×ÁÒ +
+# ÇÂÌ
+# Ç×
+# ÇÍÎ
+# ÇÐ
+# ÇÐÒ
+# ÇÐÓ
+# ÄÏ
+# É
+# ÉÓËÌ +
+# Ë -> Ú
+# Ë2 -> Ú2
+# Ë3 -> Ú3
+# ÍÎ
+# Ï
+# ÏÓ
+# ÏÓÆ
+# Ð2
+# Ð2Æ
+# Ò
+# Ò2
+# ÒÍ
+# Ó +
+# Ó2Þ
+# ÓÌ -> ÓÌÓÞ
+# Ô
+# Ô2
+# Õ +
+# Õ1
+# Õ2
+# ÆÚ
+# ÆË
+# ÆÎ +
+# ÆÐ +
+# ÆÒ
+# Þ
+# Þ2
+# Þ3
+# Þ£
+# ÞÏ
+
+# TODO:
+# Õ1 -> Õ
+# exc -> x : { $props_{'x'} = $mnrf } # x=eXception

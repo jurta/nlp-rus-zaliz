@@ -1,0 +1,11 @@
+cat /home/juri/cd4/doc/lang/rus/new/starling/dict/z* \
+| decoder -c="ak" \
+| tr -d '\r' \
+| perl z2conv.pl \
+| sortkoi8 \
+| uniq \
+> z.old
+cp z.old z
+#  patch z z.patch
+gzip -cd < z.patch.gz | patch z -
+cut -d " " -f 1 < z | uniq > z.lst
