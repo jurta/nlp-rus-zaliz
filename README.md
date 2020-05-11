@@ -774,6 +774,10 @@ split zaliz.full.all # to zaliz.full.all_1 and zaliz.full.all_2
 
 ## Скачать
 
+Исходный файл с исправлениями
+
+[zaliz.txt](https://github.com/jurta/nlp-rus-zaliz/blob/master/zaliz.txt)
+
 Файл результата
 
 [zaliz.adb](https://github.com/jurta/nlp-rus-zaliz/blob/master/zaliz.adb)
@@ -792,19 +796,18 @@ split zaliz.full.all # to zaliz.full.all_1 and zaliz.full.all_2
 
 Исходный код программы
 
-[Lingua-RU-Zaliz-Inflect.pm](https://github.com/jurta/nlp-rus-zaliz/blob/master/Lingua/RU/Zaliz/Lingua-RU-Zaliz-Inflect.pm)  
-[Lingua-RU-Accent.pm](https://github.com/jurta/nlp-rus-zaliz/blob/master/Lingua/RU/Lingua-RU-Accent.pm)  
+[Lingua-RU-Zaliz-Inflect.pm](https://github.com/jurta/nlp-rus-zaliz/blob/master/Lingua/RU/Zaliz/Inflect.pm)  
+[Lingua-RU-Accent.pm](https://github.com/jurta/nlp-rus-zaliz/blob/master/Lingua/RU/Accent.pm)  
 [adb2suf.pl](https://github.com/jurta/nlp-rus-zaliz/blob/master/adb2suf.pl)  
 [ADB\_File.pm](https://github.com/jurta/nlp-rus-zaliz/blob/master/ADB_File.pm)  
 [txt2adb.pl](https://github.com/jurta/nlp-rus-zaliz/blob/master/txt2adb.pl)
 
-Файл результатов
+Файл с раскрытыми формами словоизменения
 
 [zaliz.full.all_1](https://github.com/jurta/nlp-rus-zaliz/blob/master/zaliz.full.all_1)  
 [zaliz.full.all_2](https://github.com/jurta/nlp-rus-zaliz/blob/master/zaliz.full.all_2)
 
-Инструкции по установке и использованию программы находятся в файле README.md
-внутри архива программ.
+<!-- Инструкции по установке и использованию программы находятся в файле README.md внутри архива программ. -->
 
 <!-- http://www.jurta.org/rus/zaliz/ -->
 
