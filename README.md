@@ -743,6 +743,35 @@ zaliz2.acc - файл ударений парадигм
 3. Места ударения в каждой парадигме, разделенные точкой с запятой
    (по 6 падежей для ед.ч. и мн.ч.)
 
+## Команды, выполняемые программой make в соответствии с файлом Makefile
+
+```make
+PERL5LIB=. make
+
+perl z2txt.pl Z_160 Z_161 Z_162 Z_163 Z_164 Z_165 Z_166 Z_167 Z_168 Z_169 Z_170 Z_171 Z_172 Z_173 Z_174 Z_175 Z_175A Z_224 Z_225 Z_226 Z_227 Z_228 Z_229 Z_230 Z_231 Z_232 Z_233 Z_237 Z_238 Z_239 \
+| perl subpatch.pl z.1.1.subpatch \
+| perl subpatch.pl z.1.2.subpatch \
+> zaliz.txt
+
+cat zaliz.txt \
+| perl subpatch.pl z.2.1.subpatch \
+| perl subpatch.pl z.2.2.subpatch \
+| LANG=ru_RU.KOI8-R perl txt2adb.pl z.x.subpatch \
+> zaliz.adb 2> zaliz.adb.err
+
+perl adb2lst.pl zaliz.adb | LANG=ru_RU.KOI8-R sort -u > zaliz.lst
+
+perl adb2suf.pl zaliz.adb zaliz2.suf zaliz2.acc zaliz.lst > zaliz2.adb 2> zaliz2.adb.err
+```
+
+## Команды, запускаемые вручную
+
+```make
+perl priparad.pl -full zaliz2.adb zaliz2.suf zaliz2.acc > zaliz.full.all
+
+split zaliz.full.all # to zaliz.full.all_1 and zaliz.full.all_2
+```
+
 ## Скачать
 
 Файл результата
