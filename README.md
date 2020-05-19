@@ -770,6 +770,10 @@ perl adb2suf.pl zaliz.adb zaliz2.suf zaliz2.acc zaliz.lst > zaliz2.adb 2> zaliz2
 perl priparad.pl -full zaliz2.adb zaliz2.suf zaliz2.acc > zaliz.full.all
 
 split zaliz.full.all # to zaliz.full.all_1 and zaliz.full.all_2
+
+perl adb2yml.pl zaliz.adb zaliz.lst 2> zaliz.yml.err | perl koi8-utf8.pl > zaliz.yml
+
+split zaliz.yml # to zaliz_1.yml and zaliz_2.yml
 ```
 
 ## Скачать
@@ -778,7 +782,7 @@ split zaliz.full.all # to zaliz.full.all_1 and zaliz.full.all_2
 
 [zaliz.txt](https://github.com/jurta/nlp-rus-zaliz/blob/master/zaliz.txt)
 
-Файл результата
+Распарсенный файл с атрибутами
 
 [zaliz.adb](https://github.com/jurta/nlp-rus-zaliz/blob/master/zaliz.adb)
 
@@ -806,6 +810,11 @@ split zaliz.full.all # to zaliz.full.all_1 and zaliz.full.all_2
 
 [zaliz.full.all_1](https://github.com/jurta/nlp-rus-zaliz/blob/master/zaliz.full.all_1)  
 [zaliz.full.all_2](https://github.com/jurta/nlp-rus-zaliz/blob/master/zaliz.full.all_2)
+
+YML-файл с полной информацией и формами словоизменения
+
+[zaliz_1.yml](https://github.com/jurta/nlp-rus-zaliz/blob/master/zaliz_1.yml)  
+[zaliz_2.yml](https://github.com/jurta/nlp-rus-zaliz/blob/master/zaliz_2.yml)
 
 <!-- Инструкции по установке и использованию программы находятся в файле README.md внутри архива программ. -->
 
