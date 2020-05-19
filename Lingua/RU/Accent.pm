@@ -39,9 +39,10 @@ sub accent {
 #      ($a, @accents) = ($acc =~ /(\d+)/g);
 #      if (substr($word,$a-1,1) ne "£") { substr($word,$a-$acctype,0) = "'"; }
 #      foreach $a (@accents) { substr($word,$a-$acctype,0) = "`"; }
-    @accents = ($acc =~ /(\d+)/g);
-    for ($i = 0; $i <= $#accents; $i++) {
-      next if ($i==0 && substr($word,$accents[$i]-1,1) eq "£");
+    my @accents = ($acc =~ /(\d+)/g);
+    for (my $i = 0; $i <= $#accents; $i++) {
+      next if (length($word) < $accents[$i]);
+      next if (substr($word,$accents[$i]-1,1) eq "£");
       substr($word,$accents[$i]-$acctype,0) = ($i==0) ? "'" : "`";
     }
   } elsif ($acctype eq "a") {
@@ -60,29 +61,58 @@ sub accent {
 
 sub raccent {
   my $word = shift;
-  my $acc = "0";         # by default
   my $acctype = shift;   # 0 or 1 or a or u
   my $rword = reverse $word;
 
-  return $word unless $acctype eq "u"; # TODO: $acctype = 0 or 1 or a
+  if ($acctype eq "u") {
+    my $acc = "0";         # by default
+    if (($word !~ m([áå³£éïõùüàñ])) && ($word =~ m([ÁÅ£ÉÏÕÙÜÀÑ]))) {
+      return length($`) + 1
+    }
 
-  if (($word !~ m([áå³£éïõùüàñ])) && ($word =~ m([ÁÅ£ÉÏÕÙÜÀÑ]))) {
-    return length($`) + 1
-  }
+    while ($rword =~ m([áå³£éïõùüàñ])g) {
+      my $accn = length($word) - length($`);
+      $acc .= "." . $accn;
+      substr($word,$accn-1,1) =~ tr(áå³éïõùüàñ)(ÁÅ£ÉÏÕÙÜÀÑ);
+    }
+    $rword = reverse $word;
+    while ($rword =~ m(£)g) {
+      my $accn = length($word) - length($`);
+      $acc .= "," . $accn;
+      substr($word,$accn-1,1) =~ tr(£)(Å);
+    }
+    $acc =~ s(^0?\.)();
+    $acc
+  } else {
+    my $accent = "'";
+    if ($word !~ m([£$accent])) {
+      if ($word =~ m([$vowel])) {
+        return [$word, length($`) + 1, $word, length($`) + 1];
+      } else {
+        return [$word, 0, $word, 0];
+      }
+    }
 
-  while ($rword =~ m([áå³£éïõùüàñ])g) {
-    my $accn = length($word) - length($`);
-    $acc .= "." . $accn;
-    substr($word,$accn-1,1) =~ tr(áå³éïõùüàñ)(ÁÅ£ÉÏÕÙÜÀÑ);
+    my @parts = split(/([£$accent])/, $word);
+    my ($acc, $word1, $word2, $wacc1, $wacc2) = (0, "", "", "", "");
+    foreach my $part (@parts) {
+      if ($part eq "£") {
+        $acc++;
+        $word1 .= "£";
+        $word2 .= "Å";
+        $wacc1 = ".$acc" . $wacc1;
+        $wacc2 = ",$acc" . $wacc2;
+      } elsif ($part eq $accent) {
+        $wacc1 = ".$acc" . $wacc1;
+      } else {
+        $acc += length($part);
+        $word1 .= $part;
+        $word2 .= $part;
+      }
+    }
+    $wacc1 =~ s(^\.)();
+    return [$word1, $wacc1, $word2, $wacc1.$wacc2];
   }
-  $rword = reverse $word;
-  while ($rword =~ m(£)g) {
-    my $accn = length($word) - length($`);
-    $acc .= "," . $accn;
-    substr($word,$accn-1,1) =~ tr(£)(Å);
-  }
-  $acc =~ s(^0?\.)();
-  $acc
 }
 
 sub get_accent_letters {
