@@ -37,18 +37,20 @@ print <<HERE;
 # $CURDATE $PROGRAM v$VERSION http://jurta.org/ru/nlp/rus/zaliz
 HERE
 
-my @syntax_order = qw(Ô Ô2 Ò ÒÍ Ï ÍÎ Ç× ÇÐ ÇÐÒ ÇÍÎ ÇÂÌ);
+my @syntax_order = qw(Ô Ô2 ÍÎ Ò ÒÍ Ï Ç× ÇÐ ÇÍÎ ÇÂÌ ÇÐÒ);
 my %syntax_order = map { $syntax_order[$_] => $_ } 0 .. $#syntax_order;
-my @grammar_order = qw(É Õ1 Õ2 ÄÏ Ò2 Ð2 ÏÓ ÏÓÆ Þ Þ£ ÞÏ Þ2 Þ3 ÇÐÓ Ð2Æ Ó2Þ ÆÚ ÆÐ ÆÎ ÉÓËÌ ×ÁÒ);
+my @grammar_order = qw(É Õ1 Õ2 Þ Þ2 Þ3 Þ£ ÞÏ ÇÐÓ ÏÓ ÏÓÆ ÆÐ ÆÚ ÆÎ Ò2 Ð2 Ð2Æ ÄÏ Ó2Þ);
 my %grammar_order = map { $grammar_order[$_] => $_ } 0 .. $#grammar_order;
-my @props_order = qw(Ó Ç Ú Ú2 Ú3 ÇÐÒÓ ÆË ÆÒ ÓÌÓÞ ÓÂ Ï Ð);
+my @props_order = qw(Ó Ç Ú Ú2 Ú3 ÆË ÆÒ ÇÐÒÓ ÓÌÓÞ ÓÂ Ï Ð);
 my %props_order = map { $props_order[$_] => $_ } 0 .. $#props_order;
 
 while (<>) { # (sort (keys (%ADB_File::wordpos)))
   next if /^#/;
   chomp;
   my $w = $_;
-  for $wihp (ADB_File::get_wi($w)) {
+  my @wis = ADB_File::get_wi($w);
+
+  for $wihp (@wis) {
     my ($wi, $wfh) = Lingua::RU::Zaliz::Inflect::wi2paradigm($wihp);
 
     foreach $ph (@{$wihp}[1..scalar(@{$wihp})-1]) {
@@ -59,15 +61,15 @@ while (<>) { # (sort (keys (%ADB_File::wordpos)))
 
     my %syntax_props = map {
       $_,$wihp->[0]->{$_}
-    } grep {/^(Ô2?|ÒÍ?|Ï|ÍÎ|Ç×|ÇÐ|ÇÐÒ|ÇÍÎ|ÇÂÌ)$/} keys %{$wihp->[0]};
+    } grep {/^(Ô2?|ÍÎ|ÒÍ?|Ï|Ç×|ÇÐ|ÇÍÎ|ÇÂÌ|ÇÐÒ)$/} keys %{$wihp->[0]};
 
     my %grammar_props = map {
       $_,$wihp->[0]->{$_}
-    } grep {/^(É|Õ[12]|ÄÏ|Ò2|Ð2|ÏÓ[Æ]?|Þ[£Ï23]?|ÇÐÓ|Ð2Æ|Ó2Þ|Æ[ÚÐÎ])$/} keys %{$wihp->[0]};
+    } grep {/^(É|Õ[12]|Þ[23£Ï]?|ÇÐÓ|ÏÓ[Æ]?|Æ[ÐÚÎ]|Ò2|Ð2[Æ]?|ÄÏ|Ó2Þ)$/} keys %{$wihp->[0]};
 
     my %props = map {
       $_,$wihp->[0]->{$_}
-    } grep {!/^(Ó|Õ|Ô2?|ÒÍ?|Ï|ÍÎ|Ç×|ÇÐ|ÇÐÒ|ÇÍÎ|ÇÂÌ|É|Õ[12]|ÄÏ|Ò2|Ð2|ÏÓ[Æ]?|Þ[£Ï23]?|ÇÐÓ|Ð2Æ|Ó2Þ|Æ[ÚÐÎ]|ÉÓËÌ|×ÁÒ)$/} keys %{$wihp->[0]};
+    } grep {!/^(Ó|Õ|ÉÓËÌ|×ÁÒ|Ô2?|ÍÎ|ÒÍ?|Ï|Ç×|ÇÐ|ÇÍÎ|ÇÂÌ|ÇÐÒ|É|Õ[12]|Þ[23£Ï]?|ÇÐÓ|ÏÓ[Æ]?|Æ[ÐÚÎ]|Ò2|Ð2[Æ]?|ÄÏ|Ó2Þ)$/} keys %{$wihp->[0]};
 
     if (defined $wfh) {
       my $base = $wi->[0]->{'Ó'};
