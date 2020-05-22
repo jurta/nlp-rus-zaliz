@@ -49,78 +49,110 @@ while (<>) { # (sort (keys (%ADB_File::wordpos)))
   chomp;
   my $w = $_;
   my @wis = ADB_File::get_wi($w);
+  my $variants1 = scalar(@wis) > 1;
+  my $variant1 = 0;
 
-  for $wihp (@wis) {
-    my ($wi, $wfh) = Lingua::RU::Zaliz::Inflect::wi2paradigm($wihp);
+  print "$w:\n";
 
-    foreach $ph (@{$wihp}[1..scalar(@{$wihp})-1]) {
-      foreach $key (keys %{$ph}) {
-        $wihp->[0]->{$key} = $ph->{$key} if !(exists $wihp->[0]->{$key})
-      }
-    }
 
-    my %syntax_props = map {
-      $_,$wihp->[0]->{$_}
-    } grep {/^(т2?|мн|рм?|о|гв|гп|гмн|гбл|гпр)$/} keys %{$wihp->[0]};
+  for $wihp1 (@wis) {
+    $variant1++;
+    my $variants2 = scalar(@{$wihp1}) > 1;
+    my $variant2 = 0;
 
-    my %grammar_props = map {
-      $_,$wihp->[0]->{$_}
-    } grep {/^(и|у[12]|ч[23ёо]?|гпс|ос[ф]?|ф[пзн]|р2|п2[ф]?|до|с2ч)$/} keys %{$wihp->[0]};
+    for $wihp2 (@{$wihp1}) {
+      $variant2++;
 
-    my %props = map {
-      $_,$wihp->[0]->{$_}
-    } grep {!/^(с|у|искл|вар|т2?|мн|рм?|о|гв|гп|гмн|гбл|гпр|и|у[12]|ч[23ёо]?|гпс|ос[ф]?|ф[пзн]|р2|п2[ф]?|до|с2ч)$/} keys %{$wihp->[0]};
+      my @wihp2 = ($wihp2);
+      my $wihp = \@wihp2;
+      my ($wi, $wfh) = Lingua::RU::Zaliz::Inflect::wi2paradigm($wihp);
 
-    if (defined $wfh) {
-      my $base = $wi->[0]->{'с'};
+      my %syntax_props = map {
+        $_,$wihp->[0]->{$_}
+      } grep {/^(т2?|мн|рм?|о|гв|гп|гмн|гбл|гпр)$/} keys %{$wihp->[0]};
 
-      if ($wi->[0]->{'у'} =~ /\./) {
-        # multiple accents is too complex case, so just reset base
-        $base = "";
-      }
+      my %grammar_props = map {
+        $_,$wihp->[0]->{$_}
+      } grep {/^(и|у[12]|ч[23ёо]?|гпс|ос[ф]?|ф[пзн]|р2|п2[ф]?|до|с2ч)$/} keys %{$wihp->[0]};
 
-      map {
+      my %props = map {
+        $_,$wihp->[0]->{$_}
+      } grep {!/^(с|у|искл|вар|т2?|мн|рм?|о|гв|гп|гмн|гбл|гпр|и|у[12]|ч[23ёо]?|гпс|ос[ф]?|ф[пзн]|р2|п2[ф]?|до|с2ч)$/} keys %{$wihp->[0]};
+
+      if (defined $wfh) {
+        my $base = $wi->[0]->{'с'};
+
+        if ($wi->[0]->{'у'} =~ /\./) {
+          # multiple accents is too complex case, so just reset base
+          $base = "";
+        }
+
         map {
-          if (length($_->{'с'})) {
-            if ($wi->[0]->{'у'} !~ /\./ && $_->{'у'} < $wi->[0]->{'у'}) {
-              $base = substr($base, 0, $_->{'у'} - 1);
+          map {
+            if (length($_->{'с'})) {
+              if ($wi->[0]->{'у'} !~ /\./ && $_->{'у'} < $wi->[0]->{'у'}) {
+                $base = substr($base, 0, $_->{'у'} - 1);
+              }
+
+              while ($_->{'с'} !~ /^$base/) { $base =~ s/.$// }
             }
+          } @{$_}
+        } values(%{$wfh});
 
-            while ($_->{'с'} !~ /^$base/) { $base =~ s/.$// }
-          }
-        } @{$_}
-      } values(%{$wfh});
-      $props{'о'} = ($base eq "") ? '""' : Lingua::RU::Accent::accent($base, $wi->[0]->{'у'}, "0");
-      my $pos = $wi->[0]->{'т'};
-      $props{'п'} =
-          join(";", map {
-            join(",", map {
-              (!(length($_->{'с'}))) ? "-" :
-              ($_->{'с'} =~ /^$base(.*)/) ?
-              ($_->{'у'} > length($base) ?
-               Lingua::RU::Accent::accent($1, $_->{'у'} - length($base), "0") :
-              $1).(defined $_->{'з'} ? "(".$_->{'з'}.")" : "").
-                 (defined $_->{'п2'} ? "[".(($_->{'п2'} eq "1")?"в,на":($_->{'п2'}))."]" : "").
-                 (defined $_->{'р2'} ? "[]" : "").
-                 (defined $_->{'ф'} &&
-                   ($_->{'ф'} eq "фз" && "*" || # форма затруднительна ("X", "!")
-                    $_->{'ф'} eq "фп" && "?" || # форма предположительна ("-", "-")
-                    $_->{'ф'} eq "фн" && "-" || # формы нет ("[X]", "?")
-                    defined $_->{'ф'})) : $_->{'с'}
-            } @{$wfh->{$_}})
-          } @{$Lingua::RU::Zaliz::Inflect::paradigms{$pos}});
+        $props{'о'} = ($base eq "") ? '""' : Lingua::RU::Accent::accent($base, $wi->[0]->{'у'}, "0");
+        my $pos = $wi->[0]->{'т'};
+        $props{'п'} =
+            join(";", map {
+              join(",", map {
+                (!(length($_->{'с'}))) ? "-" :
+                ($_->{'с'} =~ /^$base(.*)/) ?
+                ($_->{'у'} > length($base) ?
+                 Lingua::RU::Accent::accent($1, $_->{'у'} - length($base), "0") :
+                $1).(defined $_->{'з'} ? "(".$_->{'з'}.")" : "").
+                   (defined $_->{'п2'} ? "[".(($_->{'п2'} eq "1")?"в,на":($_->{'п2'}))."]" : "").
+                   (defined $_->{'р2'} ? "[]" : "").
+                   (defined $_->{'ф'} &&
+                     ($_->{'ф'} eq "фз" && "*" || # форма затруднительна ("X", "!")
+                      $_->{'ф'} eq "фп" && "?" || # форма предположительна ("-", "-")
+                      $_->{'ф'} eq "фн" && "-" || # формы нет ("[X]", "?")
+                      defined $_->{'ф'})) : $_->{'с'}
+              } @{$wfh->{$_}})
+            } @{$Lingua::RU::Zaliz::Inflect::paradigms{$pos}});
+      }
+
+      $props{'с'} = "{" . join(", ", map ({
+        "$_" . (($syntax_props{$_} ne ":")
+                ? (($_ eq 'гпр' && $syntax_props{$_} =~ /[\[:\]]/)
+                   ? ': "'.($syntax_props{$_} =~ s/"//g, $syntax_props{$_}).'"'
+                   : ": ".($syntax_props{$_}))
+                : ": t")
+      } sort { $syntax_order{$a} <=> $syntax_order{$b} } (keys %syntax_props))) . "}";
+
+      $props{'г'} = "{" . join(", ", map ({
+        "$_" . (($grammar_props{$_} ne ":")
+                ? ((($_ eq 'фн' || $_ eq 'фз') && $grammar_props{$_} =~ /[\[\]]/)
+                   ? ': "'.$grammar_props{$_}.'"'
+                   : ": ".$grammar_props{$_})
+                : ": t")
+      } sort { $grammar_order{$a} <=> $grammar_order{$b} } (keys %grammar_props))) . "}";
+
+      my $i = 0;
+      print map ({
+        ($i++ == 0
+         ? (!$variants1 && !$variants2
+            ? " "
+            : ($variants1 && !$variants2
+               ? "- "
+               : ($variant2 == 1 ? "- - " : "  - ")))
+         : ($variants1 && !$variants2 ? "  " : ($variants2 ? "    " : " ")))
+        . "$_"
+        . (($props{$_} ne ":")
+           ? ((($_ eq 'з' || $_ eq 'з3' || $_ eq 'фр') && $props{$_} =~ /:/)
+              ? ': "'.($props{$_} =~ s/"//g, $props{$_}).'"'
+              : ": ".$props{$_})
+           : ": t")
+        . "\n"
+      } sort { $props_order{$a} <=> $props_order{$b} } (keys %props));
     }
-
-    $props{'с'} = "{" . join(", ", map ({
-      "$_" . (($syntax_props{$_} ne ":") ? (($_ eq 'гпр' && $syntax_props{$_} =~ /[\[:\]]/)? ': "'.($syntax_props{$_} =~ s/"//g, $syntax_props{$_}).'"' : ": ".($syntax_props{$_})) : ": t")
-    } sort { $syntax_order{$a} <=> $syntax_order{$b} } (keys %syntax_props))) . "}";
-
-    $props{'г'} = "{" . join(", ", map ({
-      "$_" . (($grammar_props{$_} ne ":") ? ((($_ eq 'фн' || $_ eq 'фз') && $grammar_props{$_} =~ /[\[\]]/)? ': "'.$grammar_props{$_}.'"' : ": ".$grammar_props{$_}) : ": t")
-    } sort { $grammar_order{$a} <=> $grammar_order{$b} } (keys %grammar_props))) . "}";
-
-    print "$w:", map ({
-      "\n $_" . (($props{$_} ne ":") ? ((($_ eq 'з' || $_ eq 'з3' || $_ eq 'фр') && $props{$_} =~ /:/) ? ': "'.($props{$_} =~ s/"//g, $props{$_}).'"': ": ".$props{$_}) : ": t")
-    } sort { $props_order{$a} <=> $props_order{$b} } (keys %props)), "\n";
   }
 }
