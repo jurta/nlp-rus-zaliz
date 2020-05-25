@@ -786,16 +786,11 @@ split zaliz.yml # to zaliz_1.yml and zaliz_2.yml
 
 [zaliz.adb](https://github.com/jurta/nlp-rus-zaliz/blob/master/zaliz.adb)
 
-Файл слов и ссылкок на парадигмы
+Группа из трёх файлов zaliz2 (отдельно суффиксы и ударения), но сейчас они
+заменены YAML-файлами ниже
 
 [zaliz2.adb](https://github.com/jurta/nlp-rus-zaliz/blob/master/zaliz2.adb)
-
-Файл суффиксов парадигм
-
 [zaliz2.suf](https://github.com/jurta/nlp-rus-zaliz/blob/master/zaliz2.suf)
-
-Файл ударений парадигм
-
 [zaliz2.acc](https://github.com/jurta/nlp-rus-zaliz/blob/master/zaliz2.acc)
 
 Исходный код программы
@@ -811,7 +806,7 @@ split zaliz.yml # to zaliz_1.yml and zaliz_2.yml
 [zaliz.full.all_1](https://github.com/jurta/nlp-rus-zaliz/blob/master/zaliz.full.all_1)  
 [zaliz.full.all_2](https://github.com/jurta/nlp-rus-zaliz/blob/master/zaliz.full.all_2)
 
-YML-файл с полной информацией и формами словоизменения
+**Главный результат**: YAML-файлы с полной информацией и формами словоизменения
 
 [zaliz_1.yml](https://github.com/jurta/nlp-rus-zaliz/blob/master/zaliz_1.yml)  
 [zaliz_2.yml](https://github.com/jurta/nlp-rus-zaliz/blob/master/zaliz_2.yml)
