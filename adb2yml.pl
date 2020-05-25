@@ -41,7 +41,7 @@ my @syntax_order = qw(т т2 мн р рм о гв гп гмн гбл гпр);
 my %syntax_order = map { $syntax_order[$_] => $_ } 0 .. $#syntax_order;
 my @grammar_order = qw(и у1 у2 ч ч2 ч3 чё чо гпс ос осф фп фз фн р2 п2 п2ф до с2ч);
 my %grammar_order = map { $grammar_order[$_] => $_ } 0 .. $#grammar_order;
-my @props_order = qw(с г з з2 з3 фк фр гпрс слсч сб о п);
+my @props_order = qw(с г з з2 з3 фк фр гпрс слсч сб о о1 о2 о3 о4 о5 п);
 my %props_order = map { $props_order[$_] => $_ } 0 .. $#props_order;
 
 while (<>) { # (sort (keys (%ADB_File::wordpos)))
@@ -54,7 +54,6 @@ while (<>) { # (sort (keys (%ADB_File::wordpos)))
 
   print "$w:\n";
 
-
   for $wihp1 (@wis) {
     $variant1++;
     my $variants2 = scalar(@{$wihp1}) > 1;
@@ -63,61 +62,88 @@ while (<>) { # (sort (keys (%ADB_File::wordpos)))
     for $wihp2 (@{$wihp1}) {
       $variant2++;
 
+      # Make array of one element (wi2paradigm supports more than one element,
+      # but for clarity we output separate entries for each variant here)
       my @wihp2 = ($wihp2);
       my $wihp = \@wihp2;
       my ($wi, $wfh) = Lingua::RU::Zaliz::Inflect::wi2paradigm($wihp);
 
       my %syntax_props = map {
-        $_,$wihp->[0]->{$_}
+        $_, $wihp->[0]->{$_}
       } grep {/^(т2?|мн|рм?|о|гв|гп|гмн|гбл|гпр)$/} keys %{$wihp->[0]};
 
       my %grammar_props = map {
-        $_,$wihp->[0]->{$_}
+        $_, $wihp->[0]->{$_}
       } grep {/^(и|у[12]|ч[23ёо]?|гпс|ос[ф]?|ф[пзн]|р2|п2[ф]?|до|с2ч)$/} keys %{$wihp->[0]};
 
       my %props = map {
-        $_,$wihp->[0]->{$_}
+        $_, $wihp->[0]->{$_}
       } grep {!/^(с|у|искл|вар|т2?|мн|рм?|о|гв|гп|гмн|гбл|гпр|и|у[12]|ч[23ёо]?|гпс|ос[ф]?|ф[пзн]|р2|п2[ф]?|до|с2ч)$/} keys %{$wihp->[0]};
 
       if (defined $wfh) {
-        my $base = $wi->[0]->{'с'};
-
-        if ($wi->[0]->{'у'} =~ /\./) {
-          # multiple accents is too complex case, so just reset base
-          $base = "";
-        }
+        # For each accent find minimal wordform root
+        my %accents;
+        my %freq;
 
         map {
           map {
             if (length($_->{'с'})) {
-              if ($wi->[0]->{'у'} !~ /\./ && $_->{'у'} < $wi->[0]->{'у'}) {
-                $base = substr($base, 0, $_->{'у'} - 1);
-              }
-
-              while ($_->{'с'} !~ /^$base/) { $base =~ s/.$// }
+              # Add fake vowel "а" to force adding accents even for 1-vowel words
+              my $wf = substr(Lingua::RU::Accent::accent($_->{'с'} . "а", $_->{'у'}, "0"), 0, -1);
+              my $base = exists($accents{$_->{'у'}}) ? $accents{$_->{'у'}} : $wf;
+              while ($wf !~ /^$base/) { $base =~ s/.$// }
+              $accents{$_->{'у'}} = $base;
+              $freq{$_->{'у'}}++;
             }
           } @{$_}
         } values(%{$wfh});
 
-        $props{'о'} = ($base eq "") ? '""' : Lingua::RU::Accent::accent($base, $wi->[0]->{'у'}, "0");
-        my $pos = $wi->[0]->{'т'};
+        my $indexes;
+        my $i = 0;
+        foreach my $acckey (sort { $freq{$b} <=> $freq{$a} } (keys %accents)) {
+          my $base = $accents{$acckey};
+          $props{'о'.($i == 0 ? "" : $i)} = $base || '""';
+          $indexes{$base} = $i;
+          $i++;
+        };
+
         $props{'п'} =
             join(";", map {
               join(",", map {
-                (!(length($_->{'с'}))) ? "-" :
-                ($_->{'с'} =~ /^$base(.*)/) ?
-                ($_->{'у'} > length($base) ?
-                 Lingua::RU::Accent::accent($1, $_->{'у'} - length($base), "0") :
-                $1).(defined $_->{'з'} ? "(".$_->{'з'}.")" : "").
-                   (defined $_->{'п2'} ? "[".(($_->{'п2'} eq "1")?"в,на":($_->{'п2'}))."]" : "").
-                   (defined $_->{'р2'} ? "[]" : "").
-                   (defined $_->{'ф'} &&
-                     ($_->{'ф'} eq "фз" && "*" || # форма затруднительна ("X", "!")
-                      $_->{'ф'} eq "фп" && "?" || # форма предположительна ("-", "-")
-                      $_->{'ф'} eq "фн" && "-" || # формы нет ("[X]", "?")
-                      defined $_->{'ф'})) : $_->{'с'}
+                my $accent = $_->{'у'};
+                my $base = $accents{$accent};
+                my $wf = "-";
+
+                if (!length($_->{'с'})) {
+                  $wf = "-";
+                } else {
+                  $wf = $_->{'с'};
+
+                  foreach my $acckey (keys %accents) {
+                    my $base = $accents{$acckey};
+                    my $word = substr(Lingua::RU::Accent::accent($_->{'с'} . "а", $_->{'у'}, "0"), 0, -1);
+
+                    if ($word =~ /^$base(.*)/) {
+                      my $suffix = $1;
+                      my $i = $indexes{$base};
+                      $wf = ($i == 0 ? "" : $i) . $suffix;
+                      last;
+                    }
+                  }
+
+                  $wf = $wf
+                         . (defined $_->{'з'} ? "(".$_->{'з'}.")" : "")
+                         . (defined $_->{'п2'} ? "[".(($_->{'п2'} eq "1")?"в,на":($_->{'п2'}))."]" : "")
+                         . (defined $_->{'р2'} ? "[]" : "")
+                         . (defined $_->{'ф'} &&
+                            ($_->{'ф'} eq "фз" && "*" || # форма затруднительна ("X", "!")
+                             $_->{'ф'} eq "фп" && "?" || # форма предположительна ("-", "-")
+                             $_->{'ф'} eq "фн" && "-" || # формы нет ("[X]", "?")
+                             defined $_->{'ф'}));
+                }
+                $wf
               } @{$wfh->{$_}})
-            } @{$Lingua::RU::Zaliz::Inflect::paradigms{$pos}});
+            } @{$Lingua::RU::Zaliz::Inflect::paradigms{$wi->[0]->{'т'}}});
       }
 
       $props{'с'} = "{" . join(", ", map ({
