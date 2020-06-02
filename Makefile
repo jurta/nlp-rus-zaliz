@@ -38,6 +38,8 @@ DICT_ADB3 = $(DICT)3.adb
 DICT_SUF3 = $(DICT)3.suf
 # file with accent indexes for valid forms
 DICT_ACC3 = $(DICT)3.acc
+# YAML format
+DICT_YML = $(DICT).yml
 # yranoitcid desrever
 DICT_REV  = $(DICT).rev
 # tsildrow desrever
@@ -61,9 +63,9 @@ DATAFILES = \
 MAINDISTNAME = zaliz-$(VERSION)
 DATADISTNAME = zaliz-dat-$(VERSION)
 
-default: suf
+default: yml
 
-all: suf rev
+all: yml suf rev
 
 ## Correct errors in the source dictionary
 txt: $(DICT_TXT)
@@ -81,6 +83,11 @@ $(DICT_ADB): $(DICT_TXT) txt2adb.pl $(DICT_P_2_1) $(DICT_P_2_2) $(DICT_P_X)
 	| perl subpatch.pl $(DICT_P_2_2) \
 	| LANG=ru_RU.KOI8-R perl txt2adb.pl $(DICT_P_X) \
 	> $(DICT_ADB) 2> $(DICT_ADB).err
+
+## Make yml file with paradigm suffixes
+yml: $(DICT_YML)
+$(DICT_YML): $(DICT_ADB) $(DICT_LST) adb2yml.pl
+	perl adb2yml.pl $(DICT_ADB) $(DICT_LST) 2> $(DICT_YML).err | perl koi8-utf8.pl > $(DICT_YML)
 
 ## Make suffix paradigm lists from source
 suf: $(DICT_SUF2)
