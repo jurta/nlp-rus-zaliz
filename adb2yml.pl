@@ -39,9 +39,9 @@ HERE
 
 my @syntax_order = qw(Ô Ô2 ÍÎ Ò ÒÍ Ï Ç× ÇÐ ÇÍÎ ÇÂÌ ÇÐÒ);
 my %syntax_order = map { $syntax_order[$_] => $_ } 0 .. $#syntax_order;
-my @grammar_order = qw(É Õ1 Õ2 Þ Þ2 Þ3 Þ£ ÞÏ ÇÐÓ ÏÓ ÏÓÆ ÆÐ ÆÚ ÆÎ Ò2 Ð2 Ð2Æ ÄÏ Ó2Þ);
-my %grammar_order = map { $grammar_order[$_] => $_ } 0 .. $#grammar_order;
-my @props_order = qw(Ó Ç Ú Ú2 Ú3 ÆË ÆÒ ÇÐÒÓ ÓÌÓÞ ÓÂ Ï Ï1 Ï2 Ï3 Ï4 Ï5 Ð);
+my @morpho_order = qw(É Õ1 Õ2 Þ Þ2 Þ3 Þ£ ÞÏ ÇÐÓ ÏÓ ÏÓÆ ÆÐ ÆÚ ÆÎ Ò2 Ð2 Ð2Æ ÄÏ Ó2Þ);
+my %morpho_order = map { $morpho_order[$_] => $_ } 0 .. $#morpho_order;
+my @props_order = qw(Ó Í Ú Ú2 Ú3 ÆË ÆÒ ÇÐÒÓ ÓÌÓÞ ÓÂ Ï Ï1 Ï2 Ï3 Ï4 Ï5 Ð);
 my %props_order = map { $props_order[$_] => $_ } 0 .. $#props_order;
 
 while (<>) { # (sort (keys (%ADB_File::wordpos)))
@@ -72,7 +72,7 @@ while (<>) { # (sort (keys (%ADB_File::wordpos)))
         $_, $wihp->[0]->{$_}
       } grep {/^(Ô2?|ÍÎ|ÒÍ?|Ï|Ç×|ÇÐ|ÇÍÎ|ÇÂÌ|ÇÐÒ)$/} keys %{$wihp->[0]};
 
-      my %grammar_props = map {
+      my %morpho_props = map {
         $_, $wihp->[0]->{$_}
       } grep {/^(É|Õ[12]|Þ[23£Ï]?|ÇÐÓ|ÏÓ[Æ]?|Æ[ÐÚÎ]|Ò2|Ð2[Æ]?|ÄÏ|Ó2Þ)$/} keys %{$wihp->[0]};
 
@@ -100,7 +100,7 @@ while (<>) { # (sort (keys (%ADB_File::wordpos)))
 
         my $indexes;
         my $i = 0;
-        foreach my $acckey (sort { $freq{$b} <=> $freq{$a} } (keys %accents)) {
+        foreach my $acckey (sort { $freq{$b} <=> $freq{$a} || length($accents{$b}) <=> length($accents{$a})} (keys %accents)) {
           my $base = $accents{$acckey};
           $props{'Ï'.($i == 0 ? "" : $i)} = $base || '""';
           $indexes{$base} = $i;
@@ -119,7 +119,7 @@ while (<>) { # (sort (keys (%ADB_File::wordpos)))
                 } else {
                   $wf = $_->{'Ó'};
 
-                  foreach my $acckey (keys %accents) {
+                  foreach my $acckey (sort { length($accents{$b}) <=> length($accents{$a})} (keys %accents)) {
                     my $base = $accents{$acckey};
                     my $word = substr(Lingua::RU::Accent::accent($_->{'Ó'} . "Á", $_->{'Õ'}, "0"), 0, -1);
 
@@ -146,6 +146,7 @@ while (<>) { # (sort (keys (%ADB_File::wordpos)))
             } @{$Lingua::RU::Zaliz::Inflect::paradigms{$wi->[0]->{'Ô'}}});
       }
 
+      # Syntax properties
       $props{'Ó'} = "{" . join(", ", map ({
         "$_" . (($syntax_props{$_} ne ":")
                 ? (($_ eq 'ÇÐÒ' && $syntax_props{$_} =~ /[\[:\]]/)
@@ -154,13 +155,14 @@ while (<>) { # (sort (keys (%ADB_File::wordpos)))
                 : ": t")
       } sort { $syntax_order{$a} <=> $syntax_order{$b} } (keys %syntax_props))) . "}";
 
-      $props{'Ç'} = "{" . join(", ", map ({
-        "$_" . (($grammar_props{$_} ne ":")
-                ? ((($_ eq 'ÆÎ' || $_ eq 'ÆÚ') && $grammar_props{$_} =~ /[\[\]]/)
-                   ? ': "'.$grammar_props{$_}.'"'
-                   : ": ".$grammar_props{$_})
+      # Morphological properties
+      $props{'Í'} = "{" . join(", ", map ({
+        "$_" . (($morpho_props{$_} ne ":")
+                ? ((($_ eq 'ÆÎ' || $_ eq 'ÆÚ') && $morpho_props{$_} =~ /[\[\]]/)
+                   ? ': "'.$morpho_props{$_}.'"'
+                   : ": ".$morpho_props{$_})
                 : ": t")
-      } sort { $grammar_order{$a} <=> $grammar_order{$b} } (keys %grammar_props))) . "}";
+      } sort { $morpho_order{$a} <=> $morpho_order{$b} } (keys %morpho_props))) . "}";
 
       my $i = 0;
       print map ({
