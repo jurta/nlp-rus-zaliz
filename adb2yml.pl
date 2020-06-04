@@ -37,11 +37,9 @@ print <<HERE;
 # $CURDATE $PROGRAM v$VERSION http://jurta.org/ru/nlp/rus/zaliz
 HERE
 
-my @syntax_order = qw(Ô Ô2 ÍÎ Ò ÒÍ Ï Ç× ÇÐ ÇÍÎ ÇÂÌ ÇÐÒ);
-my %syntax_order = map { $syntax_order[$_] => $_ } 0 .. $#syntax_order;
-my @morpho_order = qw(É Õ1 Õ2 Þ Þ2 Þ3 Þ£ ÞÏ ÇÐÓ ÏÓ ÏÓÆ ÆÐ ÆÚ ÆÎ Ò2 Ð2 Ð2Æ ÄÏ Ó2Þ);
-my %morpho_order = map { $morpho_order[$_] => $_ } 0 .. $#morpho_order;
-my @props_order = qw(Ó Í Ú Ú2 Ú3 ÆË ÆÒ ÇÐÒÓ ÓÌÓÞ ÓÂ Ï Ï1 Ï2 Ï3 Ï4 Ï5 Ð);
+my @short_order = qw(Ô Ô2 Ò ÒÍ Ï É Õ1 Õ2 Ò2 Ð2 Ð2Æ Þ Þ£ ÞÏ Þ2 Þ3 Ç× ÇÐ ÇÍÎ ÇÂÌ ÇÐÓ ÏÓ ÏÓÆ ÄÏ ÆÚ ÆÎ ÆÐ);
+my %short_order = map { $short_order[$_] => $_ } 0 .. $#short_order;
+my @props_order = qw(Ó ÍÎ Ó2Þ ÇÐÒ ÇÐÒÓ ÓÂ ÆË ÆÒ ÓÌÓÞ Ú Ú2 Ú3 Ï Ï1 Ï2 Ï3 Ï4 Ï5 Ð);
 my %props_order = map { $props_order[$_] => $_ } 0 .. $#props_order;
 
 while (<>) { # (sort (keys (%ADB_File::wordpos)))
@@ -68,17 +66,13 @@ while (<>) { # (sort (keys (%ADB_File::wordpos)))
       my $wihp = \@wihp2;
       my ($wi, $wfh) = Lingua::RU::Zaliz::Inflect::wi2paradigm($wihp);
 
-      my %syntax_props = map {
+      my %short_props = map {
         $_, $wihp->[0]->{$_}
-      } grep {/^(Ô2?|ÍÎ|ÒÍ?|Ï|Ç×|ÇÐ|ÇÍÎ|ÇÂÌ|ÇÐÒ)$/} keys %{$wihp->[0]};
-
-      my %morpho_props = map {
-        $_, $wihp->[0]->{$_}
-      } grep {/^(É|Õ[12]|Þ[23£Ï]?|ÇÐÓ|ÏÓ[Æ]?|Æ[ÐÚÎ]|Ò2|Ð2[Æ]?|ÄÏ|Ó2Þ)$/} keys %{$wihp->[0]};
+      } grep {/^(Ô|Ô2|Ò|ÒÍ|Ï|É|Õ1|Õ2|Ò2|Ð2|Ð2Æ|Þ|Þ£|ÞÏ|Þ2|Þ3|Ç×|ÇÐ|ÇÍÎ|ÇÂÌ|ÇÐÓ|ÏÓ|ÏÓÆ|ÄÏ|ÆÚ|ÆÎ|ÆÐ)$/} keys %{$wihp->[0]};
 
       my %props = map {
         $_, $wihp->[0]->{$_}
-      } grep {!/^(Ó|Õ|ÉÓËÌ|×ÁÒ|Ô2?|ÍÎ|ÒÍ?|Ï|Ç×|ÇÐ|ÇÍÎ|ÇÂÌ|ÇÐÒ|É|Õ[12]|Þ[23£Ï]?|ÇÐÓ|ÏÓ[Æ]?|Æ[ÐÚÎ]|Ò2|Ð2[Æ]?|ÄÏ|Ó2Þ)$/} keys %{$wihp->[0]};
+      } grep {!/^(Ó|Õ|ÉÓËÌ|×ÁÒ|Ô|Ô2|Ò|ÒÍ|Ï|É|Õ1|Õ2|Ò2|Ð2|Ð2Æ|Þ|Þ£|ÞÏ|Þ2|Þ3|Ç×|ÇÐ|ÇÍÎ|ÇÂÌ|ÇÐÓ|ÏÓ|ÏÓÆ|ÄÏ|ÆÚ|ÆÎ|ÆÐ)$/} keys %{$wihp->[0]};
 
       if (defined $wfh) {
         # For each accent find minimal wordform root
@@ -146,23 +140,14 @@ while (<>) { # (sort (keys (%ADB_File::wordpos)))
             } @{$Lingua::RU::Zaliz::Inflect::paradigms{$wi->[0]->{'Ô'}}});
       }
 
-      # Syntax properties
+      # Short properties
       $props{'Ó'} = "{" . join(", ", map ({
-        "$_" . (($syntax_props{$_} ne ":")
-                ? (($_ eq 'ÇÐÒ' && $syntax_props{$_} =~ /[\[:\]]/)
-                   ? ': "'.($syntax_props{$_} =~ s/"//g, $syntax_props{$_}).'"'
-                   : ": ".($syntax_props{$_}))
+        "$_" . (($short_props{$_} ne ":")
+                ? ((($_ eq 'ÆÎ' || $_ eq 'ÆÚ') && $short_props{$_} =~ /[\[\]]/)
+                   ? ': "'.$short_props{$_}.'"'
+                   : ": ".$short_props{$_})
                 : ": t")
-      } sort { $syntax_order{$a} <=> $syntax_order{$b} } (keys %syntax_props))) . "}";
-
-      # Morphological properties
-      $props{'Í'} = "{" . join(", ", map ({
-        "$_" . (($morpho_props{$_} ne ":")
-                ? ((($_ eq 'ÆÎ' || $_ eq 'ÆÚ') && $morpho_props{$_} =~ /[\[\]]/)
-                   ? ': "'.$morpho_props{$_}.'"'
-                   : ": ".$morpho_props{$_})
-                : ": t")
-      } sort { $morpho_order{$a} <=> $morpho_order{$b} } (keys %morpho_props))) . "}";
+      } sort { $short_order{$a} <=> $short_order{$b} } (keys %short_props))) . "}";
 
       my $i = 0;
       print map ({
@@ -175,7 +160,7 @@ while (<>) { # (sort (keys (%ADB_File::wordpos)))
          : ($variants1 && !$variants2 ? "  " : ($variants2 ? "    " : " ")))
         . "$_"
         . (($props{$_} ne ":")
-           ? ((($_ eq 'Ú' || $_ eq 'Ú3' || $_ eq 'ÆÒ') && $props{$_} =~ /:/)
+           ? ((($_ eq 'Ú' || $_ eq 'Ú3' || $_ eq 'ÆÒ' || $_ eq 'ÇÐÒ') && $props{$_} =~ /[\[:\]]/)
               ? ': "'.($props{$_} =~ s/"//g, $props{$_}).'"'
               : ": ".$props{$_})
            : ": t")
